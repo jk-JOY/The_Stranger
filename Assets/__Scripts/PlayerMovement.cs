@@ -6,16 +6,17 @@ public class PlayerMovement : MonoBehaviour
 {
     public static PlayerMovement instance;
 
+    private Collider2D col2d;
+    public LayerMask layerMask;
+
+    private Animator animator;
+
     public float speed;
     public float runSpeed;
     public int walkCount;
     private int currentWalkCount;
 
     private Vector3 vector;
-
-    private BoxCollider2D boxCollider;
-    private LayerMask layerMask;
-   private Animator animator;
 
     private float applyRunSpeed;
     private bool applyRunFlag = false;
@@ -36,6 +37,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Start()
     {
+        col2d = GetComponent<Collider2D>();
         animator = GetComponent<Animator>();
     }
 
@@ -62,11 +64,22 @@ public class PlayerMovement : MonoBehaviour
 
             animator.SetFloat("DirX", vector.x);
             animator.SetFloat("DirY", vector.y);
+
+            RaycastHit2D hit;
+            Vector2 start = transform.position; //캐릭터 현재 위치값 //  현재값 + 48픽셀
+            Vector2 end = start + new Vector2(vector.x * speed * walkCount, vector.y * speed * walkCount); //캐릭터가 이동하고자 하는 위치값. 
+
+            col2d.enabled = false;
+            hit = Physics2D.Linecast(start, end, layerMask);
+            col2d.enabled = true;
+
+            if (hit.transform != null)
+                break;
+
             animator.SetBool("Walking", true);
 
             while (currentWalkCount < walkCount)
             {
-
                 transform.Translate(vector.x * (speed + applyRunSpeed), vector.y * (speed + applyRunSpeed), 0);
                 if (applyRunFlag)
                     currentWalkCount++;
